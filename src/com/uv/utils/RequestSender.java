@@ -2,13 +2,11 @@ package com.uv.utils;
 
 import net.sf.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Iterator;
 
 /**
  * Created by uv2sun on 15/11/26.
@@ -16,29 +14,73 @@ import java.net.URLEncoder;
  */
 public class RequestSender {
 
-    public static String sendHttpRequest(String urlString, String params)
+    public static final String APPLICATION_FORM = "application/x-www-form-urlencoded;charset=utf-8";
+    public static final String APPLICATION_JSON = "application/json;charset=utf-8";
+    public static final String POST = "POST";
+    public static final String GET = "GET";
+    public static final String PUT = "PUT";
+    public static final String DELETE = "DELETE";
+    public static final String ACCEPT = "application/json;charset=utf-8";
+
+    public static String sendHttpRequest(String urlString, JSONObject data, String contentType, String method)
             throws IOException {
-        System.out.println("send request " + urlString + ", params=" + params);
+//        System.out.println("send request " + urlString + ", params=" + params);
+        /**
+         * 传输参数,get拼接URL,其他方式写入request body
+         */
+        String params = "";
+
+
+        /**写入参数，postForm和get格式:key=value&key1=value1方式，postJson,put格式:json字符串*/
+        if (RequestSender.APPLICATION_FORM.equals(contentType) || "GET".equals(method)) {
+            StringBuffer sb = new StringBuffer();
+            if (null != data && !data.isNullObject() && !data.isEmpty()) {
+                for (Iterator<String> it = data.keys(); it.hasNext(); ) {
+                    String key = it.next();
+                    String value = null == data.get(key) ? "" : data.getString(key);
+                    if (sb.length() > 0) sb.append("&");
+                    sb.append(key + "=" + value);
+                }
+            }
+            params = sb.toString();
+        } else if (RequestSender.APPLICATION_JSON.equals(contentType)) {
+            params = data.toString();
+        }
+        /**
+         * get方法,直接将参数拼接到URL
+         */
+        if ("GET".equals(method)) {
+            urlString += "?" + params;
+            System.out.println(urlString);
+        }
         // 创建连接
         URL url = new URL(urlString);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setDoOutput(true);
         connection.setDoInput(true);
-        connection.setRequestMethod("POST");
+        connection.setRequestMethod(method);
         connection.setUseCaches(false);
-        connection.setRequestProperty("Charset", "UTF-8");
         connection.setInstanceFollowRedirects(true);
-        connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+        if (!"GET".equals(method)) {//非get方式设置
+            connection.setRequestProperty("Content-Type", contentType);
+        }
+        connection.setRequestProperty("Accept", RequestSender.ACCEPT);
+        /**
+         * 服务器是spring-mvc实现的,默认设置Accept-Charset没用
+         */
+//        connection.setRequestProperty("Accept-Charset", "utf-8");
         connection.connect();
-
         // POST请求
-        DataOutputStream out = new DataOutputStream(
-                connection.getOutputStream());
+        /**
+         * 非get请求,将参数写入request body
+         */
+        if (!"GET".equals(method)) {
+            OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream(), "utf-8");
+            out.write(params);
+            out.flush();
+            out.close();
+        }
 
-        /**写入参数，普通key=value&key1=value1方式，入参已按此格式拼接好了*/
-        out.writeBytes(params);
-        out.flush();
-        out.close();
         // 读取响应
         BufferedReader reader = new BufferedReader(new InputStreamReader(
                 connection.getInputStream(), "UTF-8"));
@@ -54,12 +96,21 @@ public class RequestSender {
         return sb.toString();
     }
 
+    public static String postJSON(String url, JSONObject data) throws IOException {
+        return sendHttpRequest(url, data, RequestSender.APPLICATION_JSON, RequestSender.POST);
+    }
+
+    public static String postForm(String url, JSONObject data) throws IOException {
+        return sendHttpRequest(url, data, RequestSender.APPLICATION_FORM, RequestSender.POST);
+    }
+
+    public static String get(String url, JSONObject data) throws IOException {
+        return sendHttpRequest(url, data, null, RequestSender.GET);
+    }
 
     public static void main(String[] args) throws IOException {
         JSONObject data = JSONObject.fromObject("{data_type:'message',data:{content:'中文', msg_type:'sensor_add', sensor_id:1}}");
-//        String params = "data_type=" + data.getString("data_type") + "&data=" + URLEncoder.encode(data.getJSONObject("data").toString(), "UTF-8");
-        String params = "data_type=" + data.getString("data_type") + "&data=" + URLEncoder.encode(data.getJSONObject("data").toString(), "UTF-8");
-//        params = URLEncoder.encode(params, "UTF-8");
-        RequestSender.sendHttpRequest("http://127.0.0.1:8080/monitor/wstrigger", params);
+        String ret = RequestSender.get("http://127.0.0.1:8080/test", data);
+        System.out.println(ret);
     }
 }
