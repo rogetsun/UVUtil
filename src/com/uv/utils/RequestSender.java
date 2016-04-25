@@ -16,7 +16,7 @@ import java.net.URLEncoder;
  */
 public class RequestSender {
 
-    private static String sendHttpRequest(String urlString, String params)
+    public static String sendHttpRequest(String urlString, String params)
             throws IOException {
         System.out.println("send request " + urlString + ", params=" + params);
         // 创建连接
@@ -60,6 +60,6 @@ public class RequestSender {
 //        String params = "data_type=" + data.getString("data_type") + "&data=" + URLEncoder.encode(data.getJSONObject("data").toString(), "UTF-8");
         String params = "data_type=" + data.getString("data_type") + "&data=" + URLEncoder.encode(data.getJSONObject("data").toString(), "UTF-8");
 //        params = URLEncoder.encode(params, "UTF-8");
-        sendHttpRequest("http://127.0.0.1:8080/monitor/wstrigger", params);
+        RequestSender.sendHttpRequest("http://127.0.0.1:8080/monitor/wstrigger", params);
     }
 }
