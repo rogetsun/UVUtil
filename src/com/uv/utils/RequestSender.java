@@ -96,6 +96,10 @@ public class RequestSender {
         return sb.toString();
     }
 
+    public static String post(String url, JSONObject data) throws IOException {
+        return postJSON(url, data);
+    }
+
     public static String postJSON(String url, JSONObject data) throws IOException {
         return sendHttpRequest(url, data, RequestSender.APPLICATION_JSON, RequestSender.POST);
     }
