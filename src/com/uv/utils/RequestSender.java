@@ -22,6 +22,17 @@ public class RequestSender {
     public static final String DELETE = "DELETE";
     public static final String ACCEPT = "application/json;charset=utf-8";
 
+
+    /**
+     * 发送请求基础方法
+     *
+     * @param urlString   地址,不包含get,delete参数
+     * @param data        参数,get和delete情况,拼接到URL后面.put和post放到request.body里
+     * @param contentType put和post方式设置,只有这两种才有request content,即request body. APPLICATION_FORM,APPLICATION_JSON两种值.
+     * @param method      "PUT","GET","POST","DELETE"
+     * @return 响应json字符串, 默认utf-8.因为header里设置了ACCEPT = "application/json;charset=utf-8",如果对方服务器不遵守也没办法.
+     * @throws IOException
+     */
     public static String sendHttpRequest(String urlString, JSONObject data, String contentType, String method)
             throws IOException {
 //        System.out.println("send request " + urlString + ", params=" + params);
@@ -61,7 +72,7 @@ public class RequestSender {
         connection.setRequestMethod(method);
         connection.setUseCaches(false);
         connection.setInstanceFollowRedirects(true);
-        if (!"GET".equals(method)) {//非get方式设置
+        if (!"GET".equals(method) && !"DELETE".equals(method)) {//非get方式设置
             connection.setRequestProperty("Content-Type", contentType);
         }
         connection.setRequestProperty("Accept", RequestSender.ACCEPT);
