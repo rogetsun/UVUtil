@@ -32,7 +32,7 @@ public class RequestSender {
 
 
         /**写入参数，postForm和get格式:key=value&key1=value1方式，postJson,put格式:json字符串*/
-        if (RequestSender.APPLICATION_FORM.equals(contentType) || "GET".equals(method)) {
+        if (RequestSender.APPLICATION_FORM.equals(contentType) || "GET".equals(method) || "DELETE".equals(method)) {
             StringBuffer sb = new StringBuffer();
             if (null != data && !data.isNullObject() && !data.isEmpty()) {
                 for (Iterator<String> it = data.keys(); it.hasNext(); ) {
@@ -49,7 +49,7 @@ public class RequestSender {
         /**
          * get方法,直接将参数拼接到URL
          */
-        if ("GET".equals(method)) {
+        if ("GET".equals(method) || "DELETE".equals(method)) {
             urlString += "?" + params;
             System.out.println(urlString);
         }
@@ -74,7 +74,7 @@ public class RequestSender {
         /**
          * 非get请求,将参数写入request body
          */
-        if (!"GET".equals(method)) {
+        if (!"GET".equals(method) && !"DELETE".equals(method)) {
             OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream(), "utf-8");
             out.write(params);
             out.flush();
@@ -104,13 +104,22 @@ public class RequestSender {
         return sendHttpRequest(url, data, RequestSender.APPLICATION_FORM, RequestSender.POST);
     }
 
+    public static String delete(String url, JSONObject data) throws IOException {
+        return sendHttpRequest(url, data, RequestSender.APPLICATION_JSON, RequestSender.DELETE);
+    }
+
+    public static String put(String url, JSONObject data) throws IOException {
+        return sendHttpRequest(url, data, RequestSender.APPLICATION_JSON, RequestSender.PUT);
+    }
+
+
     public static String get(String url, JSONObject data) throws IOException {
         return sendHttpRequest(url, data, null, RequestSender.GET);
     }
 
     public static void main(String[] args) throws IOException {
         JSONObject data = JSONObject.fromObject("{data_type:'message',data:{content:'中文', msg_type:'sensor_add', sensor_id:1}}");
-        String ret = RequestSender.get("http://127.0.0.1:8080/test", data);
+        String ret = RequestSender.put("http://127.0.0.1:8080/test", data);
         System.out.println(ret);
     }
 }
