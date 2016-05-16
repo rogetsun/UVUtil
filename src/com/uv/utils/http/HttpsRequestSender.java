@@ -1,14 +1,19 @@
 package com.uv.utils.http;
 
+import com.uv.utils.http.ssl.CustomizedHostnameVerifier;
+import com.uv.utils.http.ssl.MyX509TrustManager;
 import net.sf.json.JSONObject;
 
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Date;
 import java.util.Iterator;
 
 /**
@@ -36,7 +41,7 @@ public class HttpsRequestSender {
      * @throws IOException
      */
     public static String sendHttpRequest(String urlString, JSONObject data, String contentType, String method)
-            throws IOException {
+            throws Exception {
 //        System.out.println("send request " + urlString + ", params=" + params);
         /**
          * 传输参数,get拼接URL,其他方式写入request body
@@ -66,9 +71,19 @@ public class HttpsRequestSender {
             urlString += "?" + params;
             System.out.println(urlString);
         }
+        System.setProperty("jsse.enableSNIExtension", "false");
+
         // 创建连接
         URL url = new URL(urlString);
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        connection.setHostnameVerifier(new CustomizedHostnameVerifier());
+        TrustManager[] tm = {new MyX509TrustManager()};
+        SSLContext sslContext = SSLContext.getInstance("SSL", "SunJSSE");
+
+        sslContext.init(null, tm, new java.security.SecureRandom());
+
+        SSLSocketFactory ssf = sslContext.getSocketFactory();
+        connection.setSSLSocketFactory(ssf);
         connection.setDoOutput(true);
         connection.setDoInput(true);
         connection.setRequestMethod(method);
@@ -83,6 +98,9 @@ public class HttpsRequestSender {
          */
 //        connection.setRequestProperty("Accept-Charset", "utf-8");
         connection.connect();
+        //获取响应头Content-Type
+//        String s = connection.getHeaderField("Content-Type");
+//        System.out.println("response.Content-Type=" + s);
         // POST请求
         /**
          * 非get请求,将参数写入request body
@@ -109,34 +127,40 @@ public class HttpsRequestSender {
         return sb.toString();
     }
 
-    public static String post(String url, JSONObject data) throws IOException {
+    public static String post(String url, JSONObject data) throws Exception {
         return postJSON(url, data);
     }
 
-    public static String postJSON(String url, JSONObject data) throws IOException {
+    public static String postJSON(String url, JSONObject data) throws Exception {
         return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.POST);
     }
 
-    public static String postForm(String url, JSONObject data) throws IOException {
+    public static String postForm(String url, JSONObject data) throws Exception {
         return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_FORM, HttpRequestSender.POST);
     }
 
-    public static String delete(String url, JSONObject data) throws IOException {
+    public static String delete(String url, JSONObject data) throws Exception {
         return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.DELETE);
     }
 
-    public static String put(String url, JSONObject data) throws IOException {
+    public static String put(String url, JSONObject data) throws Exception {
         return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.PUT);
     }
 
 
-    public static String get(String url, JSONObject data) throws IOException {
+    public static String get(String url, JSONObject data) throws Exception {
         return sendHttpRequest(url, data, null, HttpRequestSender.GET);
     }
 
-    public static void main(String[] args) throws IOException {
-        JSONObject data = JSONObject.fromObject("{data_type:'message',data:{content:'中文', msg_type:'sensor_add', sensor_id:1}}");
-        String ret = HttpRequestSender.put("http://127.0.0.1:8080/test", data);
-        System.out.println(ret);
+    public static void main(String[] args) throws Exception {
+        JSONObject param = JSONObject.fromObject("{" +
+                "        'appid': 'wx782c26e4c19acffb'," +
+                "        'fun': 'new'," +
+                "        'lang': 'zh_CN'," +
+                "        '_': " + new Date().getTime() +
+                "    }");
+        String r = HttpsRequestSender.get("https://login.weixin.qq.com/jslogin", param);
+        System.out.println(r);
+
     }
 }
