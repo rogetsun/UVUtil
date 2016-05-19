@@ -8,10 +8,7 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.URL;
 import java.util.Date;
 import java.util.Iterator;
@@ -127,6 +124,99 @@ public class HttpsRequestSender {
         return sb.toString();
     }
 
+    /**
+     * 发送请求,将响应写入os
+     *
+     * @param urlString
+     * @param data
+     * @param contentType
+     * @param method
+     * @param os
+     * @throws Exception
+     */
+    public static void sendHttpRequest(String urlString, JSONObject data, String contentType, String method, OutputStream os)
+            throws Exception {
+//        System.out.println("send request " + urlString + ", params=" + params);
+        /**
+         * 传输参数,get拼接URL,其他方式写入request body
+         */
+        String params = "";
+
+
+        /**写入参数，postForm和get格式:key=value&key1=value1方式，postJson,put格式:json字符串*/
+        if (HttpRequestSender.APPLICATION_FORM.equals(contentType) || "GET".equals(method) || "DELETE".equals(method)) {
+            StringBuffer sb = new StringBuffer();
+            if (null != data && !data.isNullObject() && !data.isEmpty()) {
+                for (Iterator<String> it = data.keys(); it.hasNext(); ) {
+                    String key = it.next();
+                    String value = null == data.get(key) ? "" : data.getString(key);
+                    if (sb.length() > 0) sb.append("&");
+                    sb.append(key + "=" + value);
+                }
+            }
+            params = sb.toString();
+        } else if (HttpRequestSender.APPLICATION_JSON.equals(contentType)) {
+            params = data.toString();
+        }
+        /**
+         * get方法,直接将参数拼接到URL
+         */
+        if ("GET".equals(method) || "DELETE".equals(method)) {
+            urlString += "?" + params;
+            System.out.println(urlString);
+        }
+        System.setProperty("jsse.enableSNIExtension", "false");
+
+        // 创建连接
+        URL url = new URL(urlString);
+        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+
+
+        connection.setHostnameVerifier(new CustomizedHostnameVerifier());
+        TrustManager[] tm = {new MyX509TrustManager()};
+        SSLContext sslContext = SSLContext.getInstance("SSL", "SunJSSE");
+        sslContext.init(null, tm, new java.security.SecureRandom());
+        SSLSocketFactory ssf = sslContext.getSocketFactory();
+        connection.setSSLSocketFactory(ssf);
+
+
+        connection.setDoOutput(true);
+        connection.setDoInput(true);
+        connection.setRequestMethod(method);
+        connection.setUseCaches(false);
+        connection.setInstanceFollowRedirects(true);
+        if (!"GET".equals(method) && !"DELETE".equals(method)) {//非get方式设置
+            connection.setRequestProperty("Content-Type", contentType);
+        }
+        connection.setRequestProperty("Accept", HttpRequestSender.ACCEPT);
+        /**
+         * 服务器是spring-mvc实现的,默认设置Accept-Charset没用
+         */
+//        connection.setRequestProperty("Accept-Charset", "utf-8");
+        connection.connect();
+        //获取响应头Content-Type
+//        String s = connection.getHeaderField("Content-Type");
+//        System.out.println("response.Content-Type=" + s);
+        // POST请求
+        /**
+         * 非get请求,将参数写入request body
+         */
+        if (!"GET".equals(method) && !"DELETE".equals(method)) {
+            OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream(), "utf-8");
+            out.write(params);
+            out.flush();
+            out.close();
+        }
+        InputStream is = connection.getInputStream();
+        int d;
+        while ((d = is.read()) != -1) {
+            System.out.println("read " + d);
+            os.write(d);
+        }
+        is.close();
+        connection.disconnect();
+    }
+
     public static String post(String url, JSONObject data) throws Exception {
         return postJSON(url, data);
     }
@@ -150,6 +240,10 @@ public class HttpsRequestSender {
 
     public static String get(String url, JSONObject data) throws Exception {
         return sendHttpRequest(url, data, null, HttpRequestSender.GET);
+    }
+
+    public static void get(String url, JSONObject data, OutputStream os) throws Exception {
+        sendHttpRequest(url, data, null, HttpsRequestSender.GET, os);
     }
 
     public static void main(String[] args) throws Exception {
