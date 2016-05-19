@@ -34,7 +34,7 @@ public class UVLog {
      * @param msg 信息
      */
     public static void error(Object msg) {
-        errorLogger.error("[" + getParentClassname() + "]" + msg);
+        errorLogger.error("[" + getParentClassname() + "]:" + msg);
     }
 
     /**
@@ -43,7 +43,7 @@ public class UVLog {
      * @param e 要记录的异常信息
      */
     public static void error(Exception e) {
-        errorLogger.error("[" + getParentClassname() + "]" + getExceptionTrace(e));
+        errorLogger.error("[" + getParentClassname() + "]:" + getExceptionTrace(e));
     }
 
     /**
@@ -53,7 +53,7 @@ public class UVLog {
      * @param msg 要记录的信息
      */
     public static void error(Exception e, Object msg) {
-        errorLogger.error("[" + getParentClassname() + "]" + msg + "\n" + getExceptionTrace(e));
+        errorLogger.error("[" + getParentClassname() + "]:" + msg + "\n" + getExceptionTrace(e));
     }
 
     /**
@@ -62,7 +62,7 @@ public class UVLog {
      * @param msg 信息
      */
     public static void warn(Object msg) {
-        errorLogger.error("[" + getParentClassname() + "]" + msg);
+        errorLogger.error("[" + getParentClassname() + "]:" + msg);
     }
 
     /**
@@ -71,7 +71,7 @@ public class UVLog {
      * @param e 要记录的异常信息
      */
     public static void warn(Exception e) {
-        errorLogger.error("[" + getParentClassname() + "]" + getExceptionTrace(e));
+        errorLogger.error("[" + getParentClassname() + "]:" + getExceptionTrace(e));
     }
 
     /**
@@ -81,7 +81,7 @@ public class UVLog {
      * @param msg 要记录的信息
      */
     public static void warn(Exception e, Object msg) {
-        errorLogger.error("[" + getParentClassname() + "]" + msg + "\n" + getExceptionTrace(e));
+        errorLogger.error("[" + getParentClassname() + "]:" + msg + "\n" + getExceptionTrace(e));
     }
 
     /**
@@ -90,7 +90,7 @@ public class UVLog {
      * @param msg 要记录信息
      */
     public static void debug(Object msg) {
-        debugLogger.debug("[" + getParentClassname() + "]" + msg);
+        debugLogger.debug("[" + getParentClassname() + "]:" + msg);
     }
 
     public static void debug(Object obj, String msg) {
@@ -113,7 +113,7 @@ public class UVLog {
      * @param msg 要记录的信息
      */
     public static void debug(Exception e, Object msg) {
-        debugLogger.debug("[" + getParentClassname() + "]" + msg + "\n" + getExceptionTrace(e));
+        debugLogger.debug("[" + getParentClassname() + "]:" + msg + "\n" + getExceptionTrace(e));
     }
 
     /**
@@ -122,7 +122,7 @@ public class UVLog {
      * @param msg 信息
      */
     public static void info(Object msg) {
-        infoLogger.info("[" + getParentClassname() + "]" + msg);
+        infoLogger.info("[" + getParentClassname() + "]:" + msg);
     }
 
     /**
@@ -131,7 +131,7 @@ public class UVLog {
      * @param e 要记录的异常信息
      */
     public static void info(Exception e) {
-        infoLogger.info("[" + getParentClassname() + "]" + getExceptionTrace(e));
+        infoLogger.info("[" + getParentClassname() + "]:" + getExceptionTrace(e));
     }
 
     /**
@@ -141,7 +141,7 @@ public class UVLog {
      * @param msg 要记录的信息
      */
     public static void info(Exception e, Object msg) {
-        infoLogger.info("[" + getParentClassname() + "]" + msg + "\n" + getExceptionTrace(e));
+        infoLogger.info("[" + getParentClassname() + "]:" + msg + "\n" + getExceptionTrace(e));
     }
 
     public static void info(Object obj, String msg) {
@@ -155,7 +155,7 @@ public class UVLog {
      */
     public static void exOut(Exception e) {
         String s = getExceptionTrace(e);
-        errorLogger.error("[" + getParentClassname() + "]" + s);
+        errorLogger.error("[" + getParentClassname() + "]:" + s);
 
     }
 
