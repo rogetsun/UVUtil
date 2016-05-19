@@ -1,5 +1,6 @@
 package com.uv.utils.http;
 
+import com.uv.utils.UVLog;
 import net.sf.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -93,6 +94,8 @@ public class HttpRequestSender {
             out.flush();
             out.close();
         }
+
+        UVLog.debug("response.header.Content-Type=" + connection.getHeaderField("Content-Type"));
 
         // 读取响应
         BufferedReader reader = new BufferedReader(new InputStreamReader(
