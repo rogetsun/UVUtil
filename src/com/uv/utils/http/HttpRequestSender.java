@@ -7,9 +7,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by uv2sun on 15/11/26.
@@ -36,7 +39,7 @@ public class HttpRequestSender {
      * @return 响应json字符串, 默认utf-8.因为header里设置了ACCEPT = "application/json;charset=utf-8",如果对方服务器不遵守也没办法.
      * @throws IOException
      */
-    public static String sendHttpRequest(String urlString, JSONObject data, String contentType, String method)
+    public static String sendHttpRequest(String urlString, JSONObject data, String contentType, String method, Map<String, String> cookie)
             throws IOException {
 //        System.out.println("send request " + urlString + ", params=" + params);
         /**
@@ -75,10 +78,22 @@ public class HttpRequestSender {
         connection.setRequestMethod(method);
         connection.setUseCaches(false);
         connection.setInstanceFollowRedirects(true);
+
+
         if (!"GET".equals(method) && !"DELETE".equals(method)) {//非get方式设置
             connection.setRequestProperty("Content-Type", contentType);
         }
         connection.setRequestProperty("Accept", HttpRequestSender.ACCEPT);
+        /**
+         * cookie设置
+         */
+        if (null != cookie) {
+            StringBuffer cookieString = new StringBuffer();
+            for (Map.Entry e : cookie.entrySet()) {
+                cookieString.append(e.getKey() + "=" + e.getValue() + ";");
+            }
+            connection.setRequestProperty("Cookie", cookieString.toString());
+        }
         /**
          * 服务器是spring-mvc实现的,默认设置Accept-Charset没用
          */
@@ -96,7 +111,14 @@ public class HttpRequestSender {
         }
 
         UVLog.debug("response.header.Content-Type=" + connection.getHeaderField("Content-Type"));
-
+        //遍历响应头
+        if (cookie != null) {
+            List<String> l = connection.getHeaderFields().get("Set-Cookie");
+            for (String s : l) {
+                HttpCookie hc = HttpCookie.parse(s).get(0);
+                cookie.put(hc.getName(), hc.getValue());
+            }
+        }
         // 读取响应
         BufferedReader reader = new BufferedReader(new InputStreamReader(
                 connection.getInputStream(), "UTF-8"));
@@ -117,29 +139,60 @@ public class HttpRequestSender {
     }
 
     public static String postJSON(String url, JSONObject data) throws IOException {
-        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.POST);
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.POST, null);
     }
 
     public static String postForm(String url, JSONObject data) throws IOException {
-        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_FORM, HttpRequestSender.POST);
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_FORM, HttpRequestSender.POST, null);
     }
 
     public static String delete(String url, JSONObject data) throws IOException {
-        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.DELETE);
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.DELETE, null);
     }
 
     public static String put(String url, JSONObject data) throws IOException {
-        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.PUT);
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.PUT, null);
     }
-
 
     public static String get(String url, JSONObject data) throws IOException {
-        return sendHttpRequest(url, data, null, HttpRequestSender.GET);
+        return sendHttpRequest(url, data, null, HttpRequestSender.GET, null);
     }
+
+    /**
+     * 带cookie的一套方法
+     */
+    public static String post(String url, JSONObject data, Map cookie) throws IOException {
+        return postJSON(url, data, cookie);
+    }
+
+    public static String postJSON(String url, JSONObject data, Map cookie) throws IOException {
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.POST, cookie);
+    }
+
+    public static String postForm(String url, JSONObject data, Map cookie) throws IOException {
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_FORM, HttpRequestSender.POST, cookie);
+    }
+
+    public static String delete(String url, JSONObject data, Map cookie) throws IOException {
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.DELETE, cookie);
+    }
+
+    public static String put(String url, JSONObject data, Map cookie) throws IOException {
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.PUT, cookie);
+    }
+
+
+    public static String get(String url, JSONObject data, Map cookie) throws IOException {
+        return sendHttpRequest(url, data, null, HttpRequestSender.GET, cookie);
+    }
+
 
     public static void main(String[] args) throws IOException {
         JSONObject data = JSONObject.fromObject("{data_type:'message',data:{content:'中文', msg_type:'sensor_add', sensor_id:1}}");
-        String ret = HttpRequestSender.put("http://127.0.0.1:8080/test", data);
+//        String ret = HttpRequestSender.get("http://127.0.0.1:8080/credit/test", data, JSONObject.fromObject("{sessionid:'fdsakiewjkfdsjkl',id:123321}"));
+        JSONObject cookie = new JSONObject();
+        String ret = HttpRequestSender.get("http://127.0.0.1:8080/credit/test", data, cookie);
+        System.out.println(cookie);
         System.out.println(ret);
     }
 }
