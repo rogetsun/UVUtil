@@ -188,26 +188,4 @@ public class HttpRequestSender {
         return sendHttpRequest(url, data, null, HttpRequestSender.GET, cookie);
     }
 
-
-    public static void main(String[] args) throws IOException {
-        //测试cookie
-//        JSONObject data = JSONObject.fromObject("{data_type:'message',data:{content:'中文', msg_type:'sensor_add', sensor_id:1}}");
-////        String ret = HttpRequestSender.get("http://127.0.0.1:8080/credit/test", data, JSONObject.fromObject("{sessionid:'fdsakiewjkfdsjkl',id:123321}"));
-//        JSONObject cookie = new JSONObject();
-//        String ret = HttpRequestSender.get("http://127.0.0.1:8080/credit/test", data, cookie);
-//        System.out.println(cookie);
-//        System.out.println(ret);
-
-        //带cookie测试session,以登录为例子
-        JSONObject cookie = new JSONObject();
-        String s = HttpRequestSender.post("http://localhost:8080/credit/to_login", JSONObject.fromObject("{login_no:'lipeng', login_password:'" + MD5.string2md5("lipeng") + "'}"), cookie);
-        JSONObject ret = JSONObject.fromObject(s);
-        if (ret.getInt("ret_code") != 0) {
-            System.out.println(ret);
-            return;
-        }
-        s = HttpRequestSender.get("http://127.0.0.1:8080/credit/users", null, cookie);
-        System.out.println(s);
-        System.out.println(cookie);
-    }
 }
