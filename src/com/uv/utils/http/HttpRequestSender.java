@@ -1,5 +1,6 @@
 package com.uv.utils.http;
 
+import com.uv.utils.MD5;
 import com.uv.utils.UVLog;
 import net.sf.json.JSONObject;
 
@@ -114,10 +115,11 @@ public class HttpRequestSender {
         //遍历响应头
         if (cookie != null) {
             List<String> l = connection.getHeaderFields().get("Set-Cookie");
-            for (String s : l) {
-                HttpCookie hc = HttpCookie.parse(s).get(0);
-                cookie.put(hc.getName(), hc.getValue());
-            }
+            if (l != null && l.size() > 0)
+                for (String s : l) {
+                    HttpCookie hc = HttpCookie.parse(s).get(0);
+                    cookie.put(hc.getName(), hc.getValue());
+                }
         }
         // 读取响应
         BufferedReader reader = new BufferedReader(new InputStreamReader(
@@ -188,11 +190,24 @@ public class HttpRequestSender {
 
 
     public static void main(String[] args) throws IOException {
-        JSONObject data = JSONObject.fromObject("{data_type:'message',data:{content:'中文', msg_type:'sensor_add', sensor_id:1}}");
-//        String ret = HttpRequestSender.get("http://127.0.0.1:8080/credit/test", data, JSONObject.fromObject("{sessionid:'fdsakiewjkfdsjkl',id:123321}"));
+        //测试cookie
+//        JSONObject data = JSONObject.fromObject("{data_type:'message',data:{content:'中文', msg_type:'sensor_add', sensor_id:1}}");
+////        String ret = HttpRequestSender.get("http://127.0.0.1:8080/credit/test", data, JSONObject.fromObject("{sessionid:'fdsakiewjkfdsjkl',id:123321}"));
+//        JSONObject cookie = new JSONObject();
+//        String ret = HttpRequestSender.get("http://127.0.0.1:8080/credit/test", data, cookie);
+//        System.out.println(cookie);
+//        System.out.println(ret);
+
+        //带cookie测试session,以登录为例子
         JSONObject cookie = new JSONObject();
-        String ret = HttpRequestSender.get("http://127.0.0.1:8080/credit/test", data, cookie);
+        String s = HttpRequestSender.post("http://localhost:8080/credit/to_login", JSONObject.fromObject("{login_no:'lipeng', login_password:'" + MD5.string2md5("lipeng") + "'}"), cookie);
+        JSONObject ret = JSONObject.fromObject(s);
+        if (ret.getInt("ret_code") != 0) {
+            System.out.println(ret);
+            return;
+        }
+        s = HttpRequestSender.get("http://127.0.0.1:8080/credit/users", null, cookie);
+        System.out.println(s);
         System.out.println(cookie);
-        System.out.println(ret);
     }
 }
