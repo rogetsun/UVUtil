@@ -3,3 +3,20 @@ HttpRequestSender
     发送http请求。提供get,post,put,delete方法
     请求参数统一使用net.sf.json.JSONObject
     支持cookie,也可session,响应cookie会放入入参给入的cookie的Map,如果入参给了。
+
+HttpsRequestSender
+    方法同HttpRequestSender
+
+UVLog
+    依赖log4j.logger
+    StackTraceElement stack[] = (new Throwable()).getStackTrace();
+    stack[2].getClassName();获取调用类
+
+ClassScaner
+    类扫描工具。支持jar的扫描。
+
+MD5
+    md5加密
+
+RequestSender
+    废弃
