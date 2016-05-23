@@ -1,0 +1,6 @@
+
+#HttpRequestSender
+##发送http请求。提供get,post,put,delete方法
+##参数统一使用net.sf.json.JSONObject
+##支持cookie,也可session,响应cookie会放入入参给入的cookie的Map,如果入参给了。
+##
