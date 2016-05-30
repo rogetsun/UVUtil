@@ -113,8 +113,13 @@ public class HttpRequestSender {
 
         UVLog.debug("response.header.Content-Type=" + connection.getHeaderField("Content-Type"));
         //遍历响应头
+        Map<String, List<String>> headerFields = connection.getHeaderFields();
+//        for (String i : m.keySet()) {
+//            System.out.println(i);
+//            System.out.println(m.get(i).toString());
+//        }
         if (cookie != null) {
-            List<String> l = connection.getHeaderFields().get("Set-Cookie");
+            List<String> l = headerFields.get("Set-Cookie");
             if (l != null && l.size() > 0)
                 for (String s : l) {
                     HttpCookie hc = HttpCookie.parse(s).get(0);
