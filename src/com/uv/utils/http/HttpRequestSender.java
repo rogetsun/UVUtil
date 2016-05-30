@@ -40,7 +40,7 @@ public class HttpRequestSender {
      * @return 响应json字符串, 默认utf-8.因为header里设置了ACCEPT = "application/json;charset=utf-8",如果对方服务器不遵守也没办法.
      * @throws IOException
      */
-    public static String sendHttpRequest(String urlString, JSONObject data, String contentType, String method, Map<String, String> cookie)
+    public static String sendHttpRequest(String urlString, JSONObject data, String contentType, String method, Map<String, String> cookie, boolean autoRedirect)
             throws IOException {
 //        System.out.println("send request " + urlString + ", params=" + params);
         /**
@@ -78,7 +78,7 @@ public class HttpRequestSender {
         connection.setDoInput(true);
         connection.setRequestMethod(method);
         connection.setUseCaches(false);
-        connection.setInstanceFollowRedirects(true);
+        connection.setInstanceFollowRedirects(autoRedirect);//返回302时,不自动重定向
 
 
         if (!"GET".equals(method) && !"DELETE".equals(method)) {//非get方式设置
@@ -111,12 +111,12 @@ public class HttpRequestSender {
             out.close();
         }
 
-        UVLog.debug("response.header.Content-Type=" + connection.getHeaderField("Content-Type"));
+//        UVLog.debug(urlString + ":response.header.Content-Type=" + connection.getHeaderField("Content-Type"));
         //遍历响应头
         Map<String, List<String>> headerFields = connection.getHeaderFields();
-//        for (String i : m.keySet()) {
+//        for (String i : headerFields.keySet()) {
 //            System.out.println(i);
-//            System.out.println(m.get(i).toString());
+//            System.out.println(headerFields.get(i).toString());
 //        }
         if (cookie != null) {
             List<String> l = headerFields.get("Set-Cookie");
@@ -146,23 +146,23 @@ public class HttpRequestSender {
     }
 
     public static String postJSON(String url, JSONObject data) throws IOException {
-        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.POST, null);
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.POST, null, true);
     }
 
     public static String postForm(String url, JSONObject data) throws IOException {
-        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_FORM, HttpRequestSender.POST, null);
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_FORM, HttpRequestSender.POST, null, true);
     }
 
     public static String delete(String url, JSONObject data) throws IOException {
-        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.DELETE, null);
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.DELETE, null, true);
     }
 
     public static String put(String url, JSONObject data) throws IOException {
-        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.PUT, null);
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.PUT, null, true);
     }
 
     public static String get(String url, JSONObject data) throws IOException {
-        return sendHttpRequest(url, data, null, HttpRequestSender.GET, null);
+        return sendHttpRequest(url, data, null, HttpRequestSender.GET, null, true);
     }
 
     /**
@@ -173,24 +173,52 @@ public class HttpRequestSender {
     }
 
     public static String postJSON(String url, JSONObject data, Map cookie) throws IOException {
-        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.POST, cookie);
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.POST, cookie, true);
     }
 
     public static String postForm(String url, JSONObject data, Map cookie) throws IOException {
-        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_FORM, HttpRequestSender.POST, cookie);
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_FORM, HttpRequestSender.POST, cookie, true);
     }
 
     public static String delete(String url, JSONObject data, Map cookie) throws IOException {
-        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.DELETE, cookie);
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.DELETE, cookie, true);
     }
 
     public static String put(String url, JSONObject data, Map cookie) throws IOException {
-        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.PUT, cookie);
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.PUT, cookie, true);
     }
 
 
     public static String get(String url, JSONObject data, Map cookie) throws IOException {
-        return sendHttpRequest(url, data, null, HttpRequestSender.GET, cookie);
+        return sendHttpRequest(url, data, null, HttpRequestSender.GET, cookie, true);
+    }
+
+
+    /**
+     * 带cookie和是否自动重定向
+     */
+    public static String post(String url, JSONObject data, Map cookie, boolean autoDirect) throws IOException {
+        return postJSON(url, data, cookie, autoDirect);
+    }
+
+    public static String postJSON(String url, JSONObject data, Map cookie, boolean autoDirect) throws IOException {
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.POST, cookie, autoDirect);
+    }
+
+    public static String postForm(String url, JSONObject data, Map cookie, boolean autoDirect) throws IOException {
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_FORM, HttpRequestSender.POST, cookie, autoDirect);
+    }
+
+    public static String delete(String url, JSONObject data, Map cookie, boolean autoDirect) throws IOException {
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.DELETE, cookie, autoDirect);
+    }
+
+    public static String put(String url, JSONObject data, Map cookie, boolean autoDirect) throws IOException {
+        return sendHttpRequest(url, data, HttpRequestSender.APPLICATION_JSON, HttpRequestSender.PUT, cookie, autoDirect);
+    }
+
+    public static String get(String url, JSONObject data, Map cookie, boolean autoDirect) throws IOException {
+        return sendHttpRequest(url, data, null, HttpRequestSender.GET, cookie, autoDirect);
     }
 
 }
