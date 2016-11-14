@@ -25,4 +25,14 @@ public class FileUtil {
         is.read(bytes);
         return new String(bytes);
     }
+
+    public static String loadFile(InputStream inputStream) throws IOException {
+        if (inputStream == null) {
+            throw new IOException("InputStream is null");
+        }
+        byte[] bytes = new byte[inputStream.available()];
+        inputStream.read(bytes);
+        return new String(bytes);
+    }
+
 }
