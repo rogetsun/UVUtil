@@ -11,10 +11,10 @@ import java.lang.reflect.Field;
  */
 public class SpringUtil {
     /**
-     * 获取 目标对象
+     * 根据代理对象 获取 原始未被代理的对象
      *
      * @param proxy 代理对象
-     * @return
+     * @return 原始对象
      * @throws Exception
      */
     public static <T> T getOrginObjectByProxyObject(T proxy) throws Exception {
