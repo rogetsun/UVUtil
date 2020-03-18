@@ -8,7 +8,7 @@ import java.io.PrintWriter;
 /**
  * Created by uv2sun on 15/12/16.
  */
-public class UVLog {
+public class Log {
     private static Logger debugLogger = null;
     private static Logger errorLogger = null;
     private static Logger infoLogger = null;
@@ -177,6 +177,6 @@ public class UVLog {
 
 
     public static void main(String[] args) {
-        UVLog.debug("123");
+        Log.debug("123");
     }
 }

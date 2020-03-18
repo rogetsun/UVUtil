@@ -1,7 +1,5 @@
 package com.uv.utils.http;
 
-import com.uv.utils.MD5;
-import com.uv.utils.UVLog;
 import net.sf.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -111,7 +109,7 @@ public class HttpRequestSender {
             out.close();
         }
 
-//        UVLog.debug(urlString + ":response.header.Content-Type=" + connection.getHeaderField("Content-Type"));
+//        Log.debug(urlString + ":response.header.Content-Type=" + connection.getHeaderField("Content-Type"));
         //遍历响应头
         Map<String, List<String>> headerFields = connection.getHeaderFields();
 //        for (String i : headerFields.keySet()) {
